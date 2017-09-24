@@ -38,11 +38,7 @@ public class Analyse {
 
     public void start(){
 
-<<<<<<< HEAD
         ArrayList<View> views = readFile("unge-lovende.csv");
-=======
-        ArrayList<View> views = readFile("forTesting.csv");
->>>>>>> 243fa8e255251b2389db42f3ac80ba6f89fd22ca
 
         HashMap[] viewData = findKeyData(views);
 
