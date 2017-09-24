@@ -1,54 +1,62 @@
 import org.junit.Test;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.ArrayList;
+import java.util.HashMap;
 import static org.junit.Assert.assertEquals;
-
-
 
 public class AnalyseTest {
 
-    String epochTime = "1447152495";
-    Date date = new Date(Long.parseLong(epochTime) * 1000);
-    View view = new View(3328043191237614106L,"KMTE20000114", date,1447152495,"10/11/2015");
-
+    Analyse analyse = new Analyse();
 
     @Test
-    public void getUserid(){
+    //This test needs the forTesting.csv file to work
+    public void readFile(){
 
-        assertEquals("userid should be true", 3328043191237614106L, view.getUserid());
+        String filename = "forTesting.csv";
+
+        ArrayList<View> views = analyse.readFile(filename);
+
+        assertEquals("Length should be 13", views.size(), 13);
+
+        assertEquals("First programid should be: KMTE20000514", views.get(0).getProgramid(), "KMTE20000514" );
 
     }
 
     @Test
-    public void getProgramid(){
+    public void findAverageOfMappedData(){
 
-        assertEquals("programid should be true", "KMTE20000114", view.getProgramid());
+        HashMap<Integer, HashMap<String, Integer>> data = new HashMap<>();
+
+        HashMap<String, Integer> DayInfo = new HashMap<>();
+
+        DayInfo.put("test1", 2);
+        DayInfo.put("test2", 6);
+        DayInfo.put("test3", 10);
+
+        data.put(123, DayInfo);
+
+        HashMap<Integer, Integer> results = analyse.findAverageOfMappedData(data);
+
+        int result = results.get(123);
+
+        assertEquals("Average should be 6", result, 6);
 
     }
 
     @Test
-    public void getVisitStartTime(){
+    public void findKeyData(){
 
-        assertEquals("Start time should be true", date, view.getVisitStartTime() );
+        String filename = "forTesting.csv";
 
-    }
+        ArrayList<View> views = analyse.readFile(filename);
 
-    @Test
-    public void getTimeWithinVisit(){
+        HashMap[] results = analyse.findKeyData(views);
 
-        assertEquals("Time should be true", 1447152495, view.getTimeWithinVisit());
+        assertEquals("First HashMap of dates should be 4 long", results[0].size(), 4);
 
-    }
+        assertEquals("Second HasMap of episodes should be 6 long", results[1].size(), 6);
 
-    @Test
-    public void getDate(){
+        assertEquals("Third HasMap of episodes should be 3 long", results[2].size(), 3);
 
-        DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-        format.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
-        String datetime = format.format(date);
-        assertEquals("Date should be true", datetime, view.getDate());
-
+        assertEquals("Forth HasMap of episodes should be 10 long", results[3].size(), 10);
     }
 }
