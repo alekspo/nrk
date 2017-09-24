@@ -10,51 +10,54 @@ import java.util.Map;
 
 /*
 * Denne oppgaven hadde vært veldig mye enklere å løse om dataen hadde vært
-* i en database som feks SQL Der kunne man laget en enkel spørring for å finne svaret :P
+* i en database der kunne man laget en enkel spørring for å finne svaret.
 *
 * Det hadde også vært enklere å løse denne oppgaven i Python som behandler CSV filer bedre også
 *
 * Som det sto i oppgaven så var ikke presentasjonen av oppgaven like viktig, og pga av den lille tiden jeg har på å
 * levere så har jeg ikke sortert svarene.
 *
+* Ser at noen av viningene har en timeWithinVisit på 0, men ut fra oppgaveteksten står det at man ikke logger en visning
+* før mot slutten av episoden. Så jeg har antatt ut fra teksten at hver visning i csv fila er en gyldig visning fordi
+* den ikke logges før personen er kommet til slutten av episoden.
+* Om dette ikke er tilfelle ville jeg laget en sjekk av lengden av vinsningen i readFile metoden og ikke tatt med visningen
+* om den var under en terskelverdi.
+*
+*
+*
 * */
-
-
-
 public class Analyse {
-
-    private ArrayList<View> views;
-    private HashMap<String, Integer> viewsPerDate;
-    private HashMap<String, Integer> viewsPerEpisode;
-    private HashMap<Integer, Integer> viewsPerWeekDay;
-    private HashMap<Integer, Integer> viewsPerHour;
 
     public static void main(String[] args) {
 
         Analyse analyse = new Analyse();
 
-        analyse.start(args);
+        analyse.start();
 
     }
 
-    public void start(String[] args){
+    public void start(){
 
-        views = readFile("../unge-lovende.csv");
+        ArrayList<View> views = readFile("unge-lovende.csv");
 
-        findKeyData();
+        HashMap[] viewData = findKeyData(views);
 
-        printMap(viewsPerEpisode);
+        //viewData[0] is viewsPerDate
+        printMap(viewData[0]);
 
-        printMap(viewsPerDate);
+        //viewData[1] is viewsPerEpisode
+        printMap(viewData[1]);
 
-        printDayMap(viewsPerWeekDay);
+        //viewData[2] is viewsPerWeekDay
+        printDayMap(viewData[2]);
 
-        printMap(viewsPerHour);
+        //viewData[3] is viewsPerHour
+        printMap(viewData[3]);
 
     }
-    public static void printDayMap(Map mp){
+    public static void printDayMap(Map ViewsADay){
 
-        Iterator it = mp.entrySet().iterator();
+        Iterator it = ViewsADay.entrySet().iterator();
         String[] days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
         while (it.hasNext()) {
@@ -66,8 +69,8 @@ public class Analyse {
 
     }
 
-    public static void printMap(Map mp) {
-        Iterator it = mp.entrySet().iterator();
+    public static void printMap(Map viewData) {
+        Iterator it = viewData.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry)it.next();
             System.out.println(pair.getKey() + " = " + pair.getValue());
@@ -76,13 +79,13 @@ public class Analyse {
         System.out.println("==========================");
     }
 
-    public void findKeyData(){
+    //returns viewsPerDate, viewsPerEpisode, viewsPerWeekDay, viewsPerHour
+    public HashMap[] findKeyData(ArrayList<View> views){
 
-        //results are stored here, for easy lookup when inserting data
-        viewsPerDate = new HashMap<>();
-        viewsPerEpisode = new HashMap<>();
-        viewsPerWeekDay = new HashMap<>();
-        viewsPerHour = new HashMap<>();
+        HashMap<String, Integer> viewsPerDate= new HashMap<>();
+        HashMap<String, Integer> viewsPerEpisode = new HashMap<>();
+        HashMap<Integer, Integer> viewsPerWeekDay;
+        HashMap<Integer, Integer> viewsPerHour;
 
         //I am storing temporary count about viewings her to calculate average later.
         //Using hashMaps of HashMaps to store the different weeks for each day and days of each hour to count the average
@@ -113,12 +116,14 @@ public class Analyse {
 
         }
 
-        viewsPerWeekDay = findAverage(tempViewsPerWeekDay);
-        viewsPerHour = findAverage(tempViewsPerHour);
+        viewsPerWeekDay = findAverageOfMappedData(tempViewsPerWeekDay);
+        viewsPerHour = findAverageOfMappedData(tempViewsPerHour);
+
+        return new HashMap[]{viewsPerDate, viewsPerEpisode, viewsPerWeekDay, viewsPerHour};
 
     }
 
-    private HashMap<Integer, Integer> findAverage(HashMap<Integer, HashMap<String, Integer>> map){
+    public HashMap<Integer, Integer> findAverageOfMappedData(HashMap<Integer, HashMap<String, Integer>> map){
 
         HashMap<Integer, Integer> returnMap = new HashMap<>();
 
@@ -145,7 +150,7 @@ public class Analyse {
         return returnMap;
     }
 
-    private ArrayList<View> readFile(String filename){
+    public ArrayList<View> readFile(String filename){
 
         try{
             BufferedReader br = new BufferedReader(new FileReader(filename));
@@ -153,7 +158,7 @@ public class Analyse {
             try {
                 String line;
                 String cvsSplitBy = ",";
-                views = new ArrayList<>();
+                ArrayList<View> views = new ArrayList<>();
                 DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
                 format.setTimeZone(TimeZone.getTimeZone("Etc/UTC"));
                 br.readLine();
